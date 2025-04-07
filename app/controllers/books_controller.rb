@@ -12,13 +12,16 @@ class BooksController < ApplicationController
   end
 
   def reserve
-    book_reservation = BookReservation.new(book_id: params[:id], email: params[:email])
+    book = Book.find(params[:id])
+    email = params[:email]
 
-    book_reservation.save
+    book.reserve!(email)
 
-    render json: book_reservation, status: :created if book_reservation.valid
-
-    render json: book_reservation.erros.full_messages, status: :unprocessable_identity
+    render json: { message: "Book reserved successfully." }, status: :created
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Book not found" }, status: :not_found
+  rescue StandardError => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   private
